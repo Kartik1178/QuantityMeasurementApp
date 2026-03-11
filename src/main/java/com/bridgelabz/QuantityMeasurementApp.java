@@ -81,5 +81,24 @@ public class QuantityMeasurementApp {
                 demonstrateAddition(weightKg, weightGram, WeightUnit.KILOGRAM);
 
         System.out.println(weightSum);
+        // VOLUME OPERATIONS (UC11)
+
+        Quantity<VolumeUnit> volume1 = new Quantity<>(1.0, VolumeUnit.LITRE);
+        Quantity<VolumeUnit> volume2 = new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+        Quantity<VolumeUnit> volume3 = new Quantity<>(1.0, VolumeUnit.GALLON);
+
+        System.out.println("\nVolume Equality:");
+        System.out.println(volume1.equals(volume2)); // true
+
+        System.out.println("\nVolume Conversion:");
+        System.out.println(volume1.convertTo(VolumeUnit.MILLILITRE)); // 1000 mL
+        System.out.println(volume3.convertTo(VolumeUnit.LITRE)); // ~3.78541 L
+
+        System.out.println("\nVolume Addition:");
+        System.out.println(volume1.add(volume2)); // 2 L
+        System.out.println(volume1.add(volume3, VolumeUnit.MILLILITRE));
+
+
+
     }
 }
