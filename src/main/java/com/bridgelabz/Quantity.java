@@ -52,6 +52,68 @@ public class Quantity<U extends IMeasurable> {
 
         return new Quantity<>(result, targetUnit);
     }
+    // ----------------------------
+// UC12: SUBTRACTION OPERATIONS
+// ----------------------------
+
+    public Quantity<U> subtract(Quantity<U> other) {
+
+        if (other == null)
+            throw new IllegalArgumentException("Other quantity must not be null");
+
+        if (this.unit.getClass() != other.unit.getClass())
+            throw new IllegalArgumentException("Cannot subtract different measurement categories");
+
+        double thisBase = unit.convertToBaseUnit(value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+
+        double resultBase = thisBase - otherBase;
+
+        double result = unit.convertFromBaseUnit(resultBase);
+
+        return new Quantity<>(result, unit);
+    }
+
+    public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+
+        if (other == null)
+            throw new IllegalArgumentException("Other quantity must not be null");
+
+        if (targetUnit == null)
+            throw new IllegalArgumentException("Target unit must not be null");
+
+        if (this.unit.getClass() != other.unit.getClass())
+            throw new IllegalArgumentException("Cannot subtract different measurement categories");
+
+        double thisBase = unit.convertToBaseUnit(value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+
+        double resultBase = thisBase - otherBase;
+
+        double result = targetUnit.convertFromBaseUnit(resultBase);
+
+        return new Quantity<>(result, targetUnit);
+    }
+// ----------------------------
+// UC12: DIVISION OPERATION
+// ----------------------------
+
+    public double divide(Quantity<U> other) {
+
+        if (other == null)
+            throw new IllegalArgumentException("Other quantity must not be null");
+
+        if (this.unit.getClass() != other.unit.getClass())
+            throw new IllegalArgumentException("Cannot divide different measurement categories");
+
+        double thisBase = unit.convertToBaseUnit(value);
+        double otherBase = other.unit.convertToBaseUnit(other.value);
+
+        if (otherBase == 0)
+            throw new ArithmeticException("Division by zero");
+
+        return thisBase / otherBase;
+    }
 
     @Override
     public boolean equals(Object obj) {

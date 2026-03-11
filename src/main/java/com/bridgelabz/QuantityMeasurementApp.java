@@ -40,7 +40,30 @@ public class QuantityMeasurementApp {
     ) {
         return q1.add(q2, targetUnit);
     }
+    // UC12 subtraction demo
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
+            Quantity<U> q1,
+            Quantity<U> q2
+    ) {
+        return q1.subtract(q2);
+    }
 
+    // explicit target
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
+            Quantity<U> q1,
+            Quantity<U> q2,
+            U targetUnit
+    ) {
+        return q1.subtract(q2, targetUnit);
+    }
+
+    // division demo
+    public static <U extends IMeasurable> double demonstrateDivision(
+            Quantity<U> q1,
+            Quantity<U> q2
+    ) {
+        return q1.divide(q2);
+    }
     public static void main(String[] args) {
 
         // LENGTH OPERATIONS
@@ -97,7 +120,18 @@ public class QuantityMeasurementApp {
         System.out.println("\nVolume Addition:");
         System.out.println(volume1.add(volume2)); // 2 L
         System.out.println(volume1.add(volume3, VolumeUnit.MILLILITRE));
+// SUBTRACTION
+        Quantity<LengthUnit> lengthA = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> lengthB = new Quantity<>(6.0, LengthUnit.INCH);
 
+        System.out.println(lengthA.subtract(lengthB));
+        System.out.println(lengthA.subtract(lengthB, LengthUnit.INCH));
+
+// DIVISION
+        Quantity<LengthUnit> lengthC = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> lengthD = new Quantity<>(2.0, LengthUnit.FEET);
+
+        System.out.println(lengthC.divide(lengthD)); // 5.0
 
 
     }
