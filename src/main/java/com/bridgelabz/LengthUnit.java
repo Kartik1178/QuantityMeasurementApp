@@ -1,38 +1,45 @@
 package com.bridgelabz;
 
 /**
- * Standalone enum for length units (UC8).
- * Responsible for converting to/from base unit (FEET).
+ * UC10 Refactor: LengthUnit implements IMeasurable
+ * Base unit = FEET
  */
-public enum LengthUnit {
-    FEET(1.0),                 // base
-    INCH(1.0 / 12.0),          // 1 inch = 1/12 feet
-    YARDS(3.0),                // 1 yard = 3 feet
-    CENTIMETERS(1.0 / 30.48);  // 1 cm = 1/30.48 feet
+public enum LengthUnit implements IMeasurable {
 
-    private final double toFeetFactor;
+    FEET(1.0),
+    INCH(1.0 / 12.0),
+    YARDS(3.0),
+    CENTIMETERS(1.0 / 30.48);
 
-    LengthUnit(double toFeetFactor) {
-        this.toFeetFactor = toFeetFactor;
+    private final double conversionFactor;
+
+    LengthUnit(double conversionFactor) {
+        this.conversionFactor = conversionFactor;
     }
 
-    public double getToFeetFactor() {
-        return toFeetFactor;
+    @Override
+    public double getConversionFactor() {
+        return conversionFactor;
     }
 
-    /** Convert a value in this unit to base unit (feet). */
+    @Override
     public double convertToBaseUnit(double value) {
         if (!Double.isFinite(value)) {
             throw new IllegalArgumentException("Value must be finite");
         }
-        return value * toFeetFactor;
+        return value * conversionFactor;
     }
 
-    /** Convert a value in base unit (feet) to this unit. */
-    public double convertFromBaseUnit(double feetValue) {
-        if (!Double.isFinite(feetValue)) {
+    @Override
+    public double convertFromBaseUnit(double baseValue) {
+        if (!Double.isFinite(baseValue)) {
             throw new IllegalArgumentException("Value must be finite");
         }
-        return feetValue / toFeetFactor;
+        return baseValue / conversionFactor;
+    }
+
+    @Override
+    public String getUnitName() {
+        return name();
     }
 }

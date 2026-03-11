@@ -1,124 +1,85 @@
 package com.bridgelabz;
 
-import java.util.Objects;
-
 /**
- * Quantity Measurement App (UC1–UC8 for Length).
- * UC8 refactor: LengthUnit is standalone and owns conversion logic.
+ * UC10 QuantityMeasurementApp
+ *
+ * Demonstrates the usage of the generic Quantity<U extends IMeasurable> class.
+ * Handles equality, conversion, and addition operations across measurement types.
  */
 public class QuantityMeasurementApp {
 
-    /** Immutable value object representing a length quantity with a LengthUnit. */
-    public static final class QuantityLength {
-        private static final double EPS = 1e-6;
-
-        private final double value;
-        private final LengthUnit unit;
-
-        public QuantityLength(double value, LengthUnit unit) {
-            if (!Double.isFinite(value)) {
-                throw new IllegalArgumentException("Value must be finite (not NaN/Infinity)");
-            }
-            if (unit == null) {
-                throw new IllegalArgumentException("Unit must not be null");
-            }
-            this.value = value;
-            this.unit = unit;
-        }
-
-        public double getValue() {
-            return value;
-        }
-
-        public LengthUnit getUnit() {
-            return unit;
-        }
-
-        /** Converts this quantity into the target unit and returns a NEW object. */
-        public QuantityLength convertTo(LengthUnit targetUnit) {
-            Objects.requireNonNull(targetUnit, "Target unit must not be null");
-            double baseFeet = unit.convertToBaseUnit(value);            // delegate to enum
-            double converted = targetUnit.convertFromBaseUnit(baseFeet); // delegate to enum
-            return new QuantityLength(converted, targetUnit);
-        }
-
-        /** UC5: Static conversion API. */
-        public static double convert(double value, LengthUnit source, LengthUnit target) {
-            if (!Double.isFinite(value)) throw new IllegalArgumentException("Value must be finite");
-            if (source == null) throw new IllegalArgumentException("Source unit must not be null");
-            if (target == null) throw new IllegalArgumentException("Target unit must not be null");
-
-            double baseFeet = source.convertToBaseUnit(value);
-            return target.convertFromBaseUnit(baseFeet);
-        }
-
-        /** UC6: Add and return in FIRST operand unit. */
-        public QuantityLength add(QuantityLength other) {
-            Objects.requireNonNull(other, "Other quantity must not be null");
-            return add(other, this.unit);
-        }
-
-        /** UC7: Add and return in EXPLICIT target unit. */
-        public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
-            Objects.requireNonNull(other, "Other quantity must not be null");
-            Objects.requireNonNull(targetUnit, "Target unit must not be null");
-
-            double aFeet = this.unit.convertToBaseUnit(this.value);
-            double bFeet = other.unit.convertToBaseUnit(other.value);
-
-            double sumFeet = aFeet + bFeet;
-            double sumInTarget = targetUnit.convertFromBaseUnit(sumFeet);
-
-            return new QuantityLength(sumInTarget, targetUnit);
-        }
-
-        /** Equality is based on physical length (converted to base feet). */
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof QuantityLength other)) return false;
-
-            double thisFeet = this.unit.convertToBaseUnit(this.value);
-            double otherFeet = other.unit.convertToBaseUnit(other.value);
-
-            return Math.abs(thisFeet - otherFeet) <= EPS;
-        }
-
-        @Override
-        public int hashCode() {
-            // hash based on normalized base-unit value (with rounding to stabilize)
-            double feet = unit.convertToBaseUnit(value);
-            long rounded = Math.round(feet / EPS); // stable bucket
-            return Long.hashCode(rounded);
-        }
-
-        @Override
-        public String toString() {
-            return "Quantity(" + value + ", " + unit + ")";
-        }
+    /** Demonstrate equality of two quantities */
+    public static <U extends IMeasurable> boolean demonstrateEquality(
+            Quantity<U> q1,
+            Quantity<U> q2
+    ) {
+        return q1.equals(q2);
     }
 
-    // UC1/UC2 helper methods (optional, but match your earlier "reduce main dependency")
-    public static boolean areFeetEqual(double a, double b) {
-        return new QuantityLength(a, LengthUnit.FEET).equals(new QuantityLength(b, LengthUnit.FEET));
+    /** Demonstrate conversion to another unit */
+    public static <U extends IMeasurable> Quantity<U> demonstrateConversion(
+            Quantity<U> quantity,
+            U targetUnit
+    ) {
+        return quantity.convertTo(targetUnit);
     }
 
-    public static boolean areInchesEqual(double a, double b) {
-        return new QuantityLength(a, LengthUnit.INCH).equals(new QuantityLength(b, LengthUnit.INCH));
+    /** Demonstrate addition returning result in first operand unit */
+    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(
+            Quantity<U> q1,
+            Quantity<U> q2
+    ) {
+        return q1.add(q2);
+    }
+
+    /** Demonstrate addition returning result in specified unit */
+    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(
+            Quantity<U> q1,
+            Quantity<U> q2,
+            U targetUnit
+    ) {
+        return q1.add(q2, targetUnit);
     }
 
     public static void main(String[] args) {
-        QuantityLength qFeet = new QuantityLength(1.0, LengthUnit.FEET);
-        QuantityLength qInch = new QuantityLength(12.0, LengthUnit.INCH);
 
-        System.out.println("Input: " + qFeet + " and " + qInch);
-        System.out.println("Equals: " + qFeet.equals(qInch)); // true
+        // LENGTH OPERATIONS
+        Quantity<LengthUnit> lengthFeet = new Quantity<>(1.0, LengthUnit.FEET);
+        Quantity<LengthUnit> lengthInches = new Quantity<>(12.0, LengthUnit.INCH);
 
-        System.out.println("Convert: " + qFeet.convertTo(LengthUnit.INCH)); // ~Quantity(12.0, INCH)
+        System.out.println("Length Equality:");
+        System.out.println(demonstrateEquality(lengthFeet, lengthInches));
 
-        System.out.println("Add (target FEET): " + qFeet.add(qInch, LengthUnit.FEET));   // ~Quantity(2.0, FEET)
-        System.out.println("Add (target YARDS): " + qFeet.add(qInch, LengthUnit.YARDS)); // ~Quantity(0.666..., YARDS)
+        System.out.println("\nLength Conversion:");
+        Quantity<LengthUnit> convertedLength =
+                demonstrateConversion(lengthFeet, LengthUnit.INCH);
 
-        System.out.println("LengthUnit.INCH.convertToBaseUnit(12.0): " + LengthUnit.INCH.convertToBaseUnit(12.0)); // 1.0 feet
+        System.out.println(convertedLength);
+
+        System.out.println("\nLength Addition:");
+        Quantity<LengthUnit> lengthSum =
+                demonstrateAddition(lengthFeet, lengthInches, LengthUnit.FEET);
+
+        System.out.println(lengthSum);
+
+
+        // WEIGHT OPERATIONS
+        Quantity<WeightUnit> weightKg = new Quantity<>(1.0, WeightUnit.KILOGRAM);
+        Quantity<WeightUnit> weightGram = new Quantity<>(1000.0, WeightUnit.GRAM);
+
+        System.out.println("\nWeight Equality:");
+        System.out.println(demonstrateEquality(weightKg, weightGram));
+
+        System.out.println("\nWeight Conversion:");
+        Quantity<WeightUnit> convertedWeight =
+                demonstrateConversion(weightKg, WeightUnit.GRAM);
+
+        System.out.println(convertedWeight);
+
+        System.out.println("\nWeight Addition:");
+        Quantity<WeightUnit> weightSum =
+                demonstrateAddition(weightKg, weightGram, WeightUnit.KILOGRAM);
+
+        System.out.println(weightSum);
     }
 }
