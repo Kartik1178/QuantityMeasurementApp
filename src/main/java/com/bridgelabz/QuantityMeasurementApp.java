@@ -132,7 +132,32 @@ public class QuantityMeasurementApp {
         Quantity<LengthUnit> lengthD = new Quantity<>(2.0, LengthUnit.FEET);
 
         System.out.println(lengthC.divide(lengthD)); // 5.0
+        System.out.println("\nTemperature Demo");
 
+        Quantity<TemperatureUnit> temp1 =
+                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+
+        Quantity<TemperatureUnit> temp2 =
+                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+
+        System.out.println("0°C equals 32°F → " + temp1.equals(temp2));
+
+        Quantity<TemperatureUnit> c =
+                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
+
+        Quantity<TemperatureUnit> f =
+                c.convertTo(TemperatureUnit.FAHRENHEIT);
+
+        System.out.println("100°C → " + f);
+
+        try {
+
+            c.add(new Quantity<>(50.0, TemperatureUnit.CELSIUS));
+
+        } catch (UnsupportedOperationException e) {
+
+            System.out.println("Error: " + e.getMessage());
+        }
 
     }
 }

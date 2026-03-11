@@ -3,10 +3,6 @@ package com.bridgelabz;
 import java.util.Objects;
 import java.util.function.DoubleBinaryOperator;
 
-/**
- * Generic Quantity class supporting multiple measurement categories.
- * UC13 refactor centralizes arithmetic logic to enforce DRY principle.
- */
 public class Quantity<U extends IMeasurable> {
 
     private static final double EPS = 1e-6;
@@ -34,9 +30,9 @@ public class Quantity<U extends IMeasurable> {
         return unit;
     }
 
-    // ----------------------------
-    // EQUALITY
-    // ----------------------------
+    /* ------------------------
+       EQUALITY
+    ------------------------- */
 
     @Override
     public boolean equals(Object obj) {
@@ -69,13 +65,16 @@ public class Quantity<U extends IMeasurable> {
         return "Quantity(" + value + ", " + unit.getUnitName() + ")";
     }
 
-    // ----------------------------
-    // CONVERSION
-    // ----------------------------
+    /* ------------------------
+       CONVERSION
+    ------------------------- */
 
     public Quantity<U> convertTo(U targetUnit) {
 
         Objects.requireNonNull(targetUnit);
+
+        if (unit.getClass() != targetUnit.getClass())
+            throw new IllegalArgumentException("Incompatible unit categories");
 
         double base = unit.convertToBaseUnit(value);
 
@@ -84,9 +83,9 @@ public class Quantity<U extends IMeasurable> {
         return new Quantity<>(converted, targetUnit);
     }
 
-    // ----------------------------
-    // ADDITION
-    // ----------------------------
+    /* ------------------------
+       ADD
+    ------------------------- */
 
     public Quantity<U> add(Quantity<U> other) {
         return add(other, this.unit);
@@ -102,12 +101,12 @@ public class Quantity<U extends IMeasurable> {
         double converted =
                 targetUnit.convertFromBaseUnit(resultBase);
 
-        return new Quantity<>(roundToTwoDecimals(converted), targetUnit);
+        return new Quantity<>(round(converted), targetUnit);
     }
 
-    // ----------------------------
-    // SUBTRACTION
-    // ----------------------------
+    /* ------------------------
+       SUBTRACT
+    ------------------------- */
 
     public Quantity<U> subtract(Quantity<U> other) {
         return subtract(other, this.unit);
@@ -123,12 +122,12 @@ public class Quantity<U extends IMeasurable> {
         double converted =
                 targetUnit.convertFromBaseUnit(resultBase);
 
-        return new Quantity<>(roundToTwoDecimals(converted), targetUnit);
+        return new Quantity<>(round(converted), targetUnit);
     }
 
-    // ----------------------------
-    // DIVISION
-    // ----------------------------
+    /* ------------------------
+       DIVIDE
+    ------------------------- */
 
     public double divide(Quantity<U> other) {
 
@@ -137,54 +136,54 @@ public class Quantity<U extends IMeasurable> {
         return performBaseArithmetic(other, ArithmeticOperation.DIVIDE);
     }
 
-    // ----------------------------
-    // UC13 CENTRALIZED VALIDATION
-    // ----------------------------
+    /* ------------------------
+       VALIDATION
+    ------------------------- */
 
     private void validateArithmeticOperands(
             Quantity<U> other,
             U targetUnit,
-            boolean targetUnitRequired) {
+            boolean targetRequired) {
 
         if (other == null)
             throw new IllegalArgumentException("Other quantity must not be null");
 
-        if (this.unit.getClass() != other.unit.getClass())
+        if (unit.getClass() != other.unit.getClass())
             throw new IllegalArgumentException("Incompatible unit categories");
 
-        if (!Double.isFinite(this.value) || !Double.isFinite(other.value))
-            throw new IllegalArgumentException("Values must be finite");
+        unit.validateOperationSupport("ARITHMETIC");
 
-        if (targetUnitRequired && targetUnit == null)
+        if (targetRequired && targetUnit == null)
             throw new IllegalArgumentException("Target unit must not be null");
     }
 
-    // ----------------------------
-    // UC13 CENTRALIZED ARITHMETIC
-    // ----------------------------
+    /* ------------------------
+       ARITHMETIC CORE
+    ------------------------- */
 
     private double performBaseArithmetic(
             Quantity<U> other,
             ArithmeticOperation operation) {
 
-        double thisBase = unit.convertToBaseUnit(value);
+        unit.validateOperationSupport(operation.name());
 
-        double otherBase = other.unit.convertToBaseUnit(other.value);
+        double a = unit.convertToBaseUnit(value);
+        double b = other.unit.convertToBaseUnit(other.value);
 
-        return operation.compute(thisBase, otherBase);
+        return operation.compute(a, b);
     }
 
-    // ----------------------------
-    // ROUNDING HELPER
-    // ----------------------------
+    /* ------------------------
+       ROUNDING
+    ------------------------- */
 
-    private double roundToTwoDecimals(double value) {
-        return Math.round(value * 100.0) / 100.0;
+    private double round(double v) {
+        return Math.round(v * 100.0) / 100.0;
     }
 
-    // ----------------------------
-    // ARITHMETIC OPERATION ENUM
-    // ----------------------------
+    /* ------------------------
+       OPERATION ENUM
+    ------------------------- */
 
     private enum ArithmeticOperation {
 
@@ -193,19 +192,21 @@ public class Quantity<U extends IMeasurable> {
         SUBTRACT((a, b) -> a - b),
 
         DIVIDE((a, b) -> {
+
             if (b == 0)
                 throw new ArithmeticException("Division by zero");
+
             return a / b;
         });
 
-        private final DoubleBinaryOperator operator;
+        private final DoubleBinaryOperator op;
 
-        ArithmeticOperation(DoubleBinaryOperator operator) {
-            this.operator = operator;
+        ArithmeticOperation(DoubleBinaryOperator op) {
+            this.op = op;
         }
 
         public double compute(double a, double b) {
-            return operator.applyAsDouble(a, b);
+            return op.applyAsDouble(a, b);
         }
     }
 }
