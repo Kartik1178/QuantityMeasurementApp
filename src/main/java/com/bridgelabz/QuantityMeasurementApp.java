@@ -1,163 +1,119 @@
-package com.bridgelabz;
+﻿package com.bridgelabz;
+
+import com.bridgelabz.controller.QuantityMeasurementController;
+import com.bridgelabz.dto.QuantityDTO;
+import com.bridgelabz.repository.IQuantityMeasurementRepository;
+import com.bridgelabz.repository.impl.QuantityMeasurementCacheRepository;
+import com.bridgelabz.service.IQuantityMeasurementService;
+import com.bridgelabz.service.impl.QuantityMeasurementServiceImpl;
 
 /**
- * UC10 QuantityMeasurementApp
+ * UC15 Application Entry Point.
  *
- * Demonstrates the usage of the generic Quantity<U extends IMeasurable> class.
- * Handles equality, conversion, and addition operations across measurement types.
+ * Responsibilities (only):
+ *   - Bootstrap dependencies (Factory pattern)
+ *   - Wire repository -> service -> controller (DI)
+ *   - Delegate all work to controller
+ *
+ * Design patterns used:
+ *   - Factory:    createService() / createController()
+ *   - Facade:     controller hides service complexity
+ *   - Singleton:  repository (QuantityMeasurementCacheRepository)
+ *   - DI:         constructor injection throughout
  */
 public class QuantityMeasurementApp {
 
-    /** Demonstrate equality of two quantities */
-    public static <U extends IMeasurable> boolean demonstrateEquality(
-            Quantity<U> q1,
-            Quantity<U> q2
-    ) {
-        return q1.equals(q2);
+    // â”€â”€ Factory: create service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    public static IQuantityMeasurementService createService(
+            IQuantityMeasurementRepository repository) {
+        return new QuantityMeasurementServiceImpl(repository);
     }
 
-    /** Demonstrate conversion to another unit */
-    public static <U extends IMeasurable> Quantity<U> demonstrateConversion(
-            Quantity<U> quantity,
-            U targetUnit
-    ) {
-        return quantity.convertTo(targetUnit);
+    // â”€â”€ Factory: create controller â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    public static QuantityMeasurementController createController(
+            IQuantityMeasurementService service) {
+        return new QuantityMeasurementController(service);
     }
 
-    /** Demonstrate addition returning result in first operand unit */
-    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(
-            Quantity<U> q1,
-            Quantity<U> q2
-    ) {
-        return q1.add(q2);
-    }
-
-    /** Demonstrate addition returning result in specified unit */
-    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(
-            Quantity<U> q1,
-            Quantity<U> q2,
-            U targetUnit
-    ) {
-        return q1.add(q2, targetUnit);
-    }
-    // UC12 subtraction demo
-    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
-            Quantity<U> q1,
-            Quantity<U> q2
-    ) {
-        return q1.subtract(q2);
-    }
-
-    // explicit target
-    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
-            Quantity<U> q1,
-            Quantity<U> q2,
-            U targetUnit
-    ) {
-        return q1.subtract(q2, targetUnit);
-    }
-
-    // division demo
-    public static <U extends IMeasurable> double demonstrateDivision(
-            Quantity<U> q1,
-            Quantity<U> q2
-    ) {
-        return q1.divide(q2);
-    }
+    // â”€â”€ Entry Point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public static void main(String[] args) {
 
-        // LENGTH OPERATIONS
-        Quantity<LengthUnit> lengthFeet = new Quantity<>(1.0, LengthUnit.FEET);
-        Quantity<LengthUnit> lengthInches = new Quantity<>(12.0, LengthUnit.INCH);
+        // 1. Initialize repository (Singleton)
+        IQuantityMeasurementRepository repository =
+                QuantityMeasurementCacheRepository.getInstance();
 
-        System.out.println("Length Equality:");
-        System.out.println(demonstrateEquality(lengthFeet, lengthInches));
+        // 2. Wire service with DI
+        IQuantityMeasurementService service = createService(repository);
 
-        System.out.println("\nLength Conversion:");
-        Quantity<LengthUnit> convertedLength =
-                demonstrateConversion(lengthFeet, LengthUnit.INCH);
+        // 3. Wire controller with DI
+        QuantityMeasurementController controller = createController(service);
 
-        System.out.println(convertedLength);
+        System.out.println("============================================================");
+        System.out.println(" UC15 - N-Tier Quantity Measurement Application");
+        System.out.println("============================================================");
 
-        System.out.println("\nLength Addition:");
-        Quantity<LengthUnit> lengthSum =
-                demonstrateAddition(lengthFeet, lengthInches, LengthUnit.FEET);
+        // â”€â”€ Example 1: Length Equality â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 1: Length Equality ---");
+        controller.performComparison(
+                new QuantityDTO(1.0, "FEET", "LENGTH"),
+                new QuantityDTO(12.0, "INCH", "LENGTH"));
 
-        System.out.println(lengthSum);
+        // â”€â”€ Example 2: Length Conversion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 2: Length Conversion ---");
+        controller.performConversion(
+                new QuantityDTO(1.0, "FEET", "LENGTH"), "INCH");
 
+        // â”€â”€ Example 3: Length Addition â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 3: Length Addition ---");
+        controller.performAddition(
+                new QuantityDTO(1.0, "FEET", "LENGTH"),
+                new QuantityDTO(12.0, "INCH", "LENGTH"));
 
-        // WEIGHT OPERATIONS
-        Quantity<WeightUnit> weightKg = new Quantity<>(1.0, WeightUnit.KILOGRAM);
-        Quantity<WeightUnit> weightGram = new Quantity<>(1000.0, WeightUnit.GRAM);
+        // â”€â”€ Example 4: Weight Equality â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 4: Weight Equality ---");
+        controller.performComparison(
+                new QuantityDTO(1.0, "KILOGRAM", "WEIGHT"),
+                new QuantityDTO(1000.0, "GRAM", "WEIGHT"));
 
-        System.out.println("\nWeight Equality:");
-        System.out.println(demonstrateEquality(weightKg, weightGram));
+        // â”€â”€ Example 5: Volume Addition â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 5: Volume Addition ---");
+        controller.performAddition(
+                new QuantityDTO(1.0, "LITRE", "VOLUME"),
+                new QuantityDTO(1000.0, "MILLILITRE", "VOLUME"));
 
-        System.out.println("\nWeight Conversion:");
-        Quantity<WeightUnit> convertedWeight =
-                demonstrateConversion(weightKg, WeightUnit.GRAM);
+        // â”€â”€ Example 6: Temperature Comparison â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 6: Temperature Comparison ---");
+        controller.performComparison(
+                new QuantityDTO(0.0, "CELSIUS", "TEMPERATURE"),
+                new QuantityDTO(32.0, "FAHRENHEIT", "TEMPERATURE"));
 
-        System.out.println(convertedWeight);
+        // â”€â”€ Example 7: Temperature Addition (should error) â”€â”€â”€
+        System.out.println("\n--- Example 7: Temperature Addition (expect error) ---");
+        controller.performAddition(
+                new QuantityDTO(100.0, "CELSIUS", "TEMPERATURE"),
+                new QuantityDTO(50.0, "CELSIUS", "TEMPERATURE"));
 
-        System.out.println("\nWeight Addition:");
-        Quantity<WeightUnit> weightSum =
-                demonstrateAddition(weightKg, weightGram, WeightUnit.KILOGRAM);
+        // â”€â”€ Example 8: Cross-Category Prevention â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 8: Cross-Category Prevention (expect error) ---");
+        controller.performAddition(
+                new QuantityDTO(1.0, "FEET", "LENGTH"),
+                new QuantityDTO(1.0, "KILOGRAM", "WEIGHT"));
 
-        System.out.println(weightSum);
-        // VOLUME OPERATIONS (UC11)
+        // â”€â”€ Example 9: Division â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 9: Division ---");
+        controller.performDivision(
+                new QuantityDTO(10.0, "FEET", "LENGTH"),
+                new QuantityDTO(2.0, "FEET", "LENGTH"));
 
-        Quantity<VolumeUnit> volume1 = new Quantity<>(1.0, VolumeUnit.LITRE);
-        Quantity<VolumeUnit> volume2 = new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
-        Quantity<VolumeUnit> volume3 = new Quantity<>(1.0, VolumeUnit.GALLON);
+        // â”€â”€ Example 10: Subtraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println("\n--- Example 10: Subtraction ---");
+        controller.performSubtraction(
+                new QuantityDTO(10.0, "FEET", "LENGTH"),
+                new QuantityDTO(6.0, "INCH", "LENGTH"));
 
-        System.out.println("\nVolume Equality:");
-        System.out.println(volume1.equals(volume2)); // true
-
-        System.out.println("\nVolume Conversion:");
-        System.out.println(volume1.convertTo(VolumeUnit.MILLILITRE)); // 1000 mL
-        System.out.println(volume3.convertTo(VolumeUnit.LITRE)); // ~3.78541 L
-
-        System.out.println("\nVolume Addition:");
-        System.out.println(volume1.add(volume2)); // 2 L
-        System.out.println(volume1.add(volume3, VolumeUnit.MILLILITRE));
-// SUBTRACTION
-        Quantity<LengthUnit> lengthA = new Quantity<>(10.0, LengthUnit.FEET);
-        Quantity<LengthUnit> lengthB = new Quantity<>(6.0, LengthUnit.INCH);
-
-        System.out.println(lengthA.subtract(lengthB));
-        System.out.println(lengthA.subtract(lengthB, LengthUnit.INCH));
-
-// DIVISION
-        Quantity<LengthUnit> lengthC = new Quantity<>(10.0, LengthUnit.FEET);
-        Quantity<LengthUnit> lengthD = new Quantity<>(2.0, LengthUnit.FEET);
-
-        System.out.println(lengthC.divide(lengthD)); // 5.0
-        System.out.println("\nTemperature Demo");
-
-        Quantity<TemperatureUnit> temp1 =
-                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
-
-        Quantity<TemperatureUnit> temp2 =
-                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
-
-        System.out.println("0°C equals 32°F → " + temp1.equals(temp2));
-
-        Quantity<TemperatureUnit> c =
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
-
-        Quantity<TemperatureUnit> f =
-                c.convertTo(TemperatureUnit.FAHRENHEIT);
-
-        System.out.println("100°C → " + f);
-
-        try {
-
-            c.add(new Quantity<>(50.0, TemperatureUnit.CELSIUS));
-
-        } catch (UnsupportedOperationException e) {
-
-            System.out.println("Error: " + e.getMessage());
-        }
-
+        System.out.println("\n============================================================");
+        System.out.println(" History stored in repository: " +
+                repository.findAll().size() + " records");
+        System.out.println("============================================================");
     }
 }
