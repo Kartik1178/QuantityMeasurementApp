@@ -1,9 +1,6 @@
-package com.bridgelabz;
+﻿package com.bridgelabz;
 
-/**
- * UC10 Refactor: LengthUnit implements IMeasurable
- * Base unit = FEET
- */
+/** UC10 LengthUnit. Base unit = FEET */
 public enum LengthUnit implements IMeasurable {
 
     FEET(1.0),
@@ -13,33 +10,12 @@ public enum LengthUnit implements IMeasurable {
 
     private final double conversionFactor;
 
-    LengthUnit(double conversionFactor) {
-        this.conversionFactor = conversionFactor;
-    }
+    LengthUnit(double conversionFactor) { this.conversionFactor = conversionFactor; }
 
-    @Override
-    public double getConversionFactor() {
-        return conversionFactor;
-    }
-
-    @Override
-    public double convertToBaseUnit(double value) {
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Value must be finite");
-        }
-        return value * conversionFactor;
-    }
-
-    @Override
-    public double convertFromBaseUnit(double baseValue) {
-        if (!Double.isFinite(baseValue)) {
-            throw new IllegalArgumentException("Value must be finite");
-        }
-        return baseValue / conversionFactor;
-    }
-
-    @Override
-    public String getUnitName() {
-        return name();
-    }
+    @Override public double getConversionFactor()           { return conversionFactor; }
+    @Override public double convertToBaseUnit(double v)     { if (!Double.isFinite(v)) throw new IllegalArgumentException("Value must be finite"); return v * conversionFactor; }
+    @Override public double convertFromBaseUnit(double v)   { if (!Double.isFinite(v)) throw new IllegalArgumentException("Value must be finite"); return v / conversionFactor; }
+    @Override public String getUnitName()                   { return name(); }
+    @Override public String getMeasurementType()            { return "LENGTH"; }
+    @Override public IMeasurable fromUnitName(String n)     { return LengthUnit.valueOf(n.toUpperCase()); }
 }

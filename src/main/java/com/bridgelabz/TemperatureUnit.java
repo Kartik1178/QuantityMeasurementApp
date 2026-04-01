@@ -1,69 +1,36 @@
-package com.bridgelabz;
+﻿package com.bridgelabz;
 
-/**
- * Temperature units
- * Base unit = CELSIUS
- */
+/** UC14 TemperatureUnit. Base unit = CELSIUS */
 public enum TemperatureUnit implements IMeasurable {
 
     CELSIUS,
     FAHRENHEIT;
 
-    // Temperature does NOT support arithmetic
-    private final SupportsArithmetic supportsArithmetic = () -> false;
+    private final SupportsArithmetic arithmeticSupport = () -> false;
 
-    @Override
-    public String getUnitName() {
-        return name();
-    }
+    @Override public String getUnitName()               { return name(); }
+    @Override public double getConversionFactor()       { return 1.0; }
 
-    @Override
-    public double getConversionFactor() {
-        return 1.0;
-    }
-
-    /**
-     * Convert temperature to base unit (Celsius)
-     */
     @Override
     public double convertToBaseUnit(double value) {
-
-        if (this == CELSIUS)
-            return value;
-
-        // Fahrenheit → Celsius
-        return (value - 32) * 5 / 9;
+        if (this == CELSIUS) return value;
+        return (value - 32) * 5.0 / 9.0;
     }
 
-    /**
-     * Convert temperature from base unit (Celsius)
-     */
     @Override
     public double convertFromBaseUnit(double baseValue) {
-
-        if (this == CELSIUS)
-            return baseValue;
-
-        // Celsius → Fahrenheit
-        return baseValue * 9 / 5 + 32;
+        if (this == CELSIUS) return baseValue;
+        return baseValue * 9.0 / 5.0 + 32;
     }
 
-    @Override
-    public boolean supportsArithmetic() {
-        return supportsArithmetic.isSupported();
-    }
+    @Override public boolean supportsArithmetic() { return arithmeticSupport.isSupported(); }
 
-    /**
-     * Throw exception when arithmetic is attempted
-     */
     @Override
     public void validateOperationSupport(String operation) {
-
-        if (!supportsArithmetic.isSupported()) {
-
-            throw new UnsupportedOperationException(
-                    this.name() + " does not support " +
-                            operation + " operations.");
-        }
+        if (!arithmeticSupport.isSupported())
+            throw new UnsupportedOperationException(name() + " does not support " + operation + " operations.");
     }
+
+    @Override public String getMeasurementType()            { return "TEMPERATURE"; }
+    @Override public IMeasurable fromUnitName(String n)     { return TemperatureUnit.valueOf(n.toUpperCase()); }
 }
