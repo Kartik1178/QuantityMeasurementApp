@@ -30,3 +30,14 @@ bin/
 
 .idea/
 QuantityMeasurementApp.iml
+
+### Maven ###
+target/
+*.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Application ###
+logs/
+*.dat
+*.log
