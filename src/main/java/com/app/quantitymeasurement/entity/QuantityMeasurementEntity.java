@@ -1,205 +1,92 @@
 package com.app.quantitymeasurement.entity;
 
-import java.io.Serializable;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 /**
- * UC16 Persistence entity stored in the repository.
- * Immutable by design - use constructors matching the operation type.
+ * UC17 JPA Entity for persisting quantity measurement operations.
+ * Mapped to the 'quantity_measurements' table with JPA annotations.
+ * Uses Lombok to reduce boilerplate code.
  */
-public class QuantityMeasurementEntity implements Serializable {
+@Entity
+@Table(name = "quantity_measurements", indexes = {
+        @Index(name = "idx_operation_type", columnList = "operationType"),
+        @Index(name = "idx_measurement_type", columnList = "thisMeasurementType"),
+        @Index(name = "idx_created_at", columnList = "createdAt"),
+        @Index(name = "idx_is_error", columnList = "isError")
+})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class QuantityMeasurementEntity {
 
-    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private long id;
+    @Column(name = "this_value")
+    private double thisValue;
 
-    // Operands (raw DTO representation)
-    private double operand1Value;
-    private String operand1Unit;
-    private double operand2Value;
-    private String operand2Unit;
+    @Column(name = "this_unit")
+    private String thisUnit;
 
-    // Operation metadata
-    private String operationType; // ADD, SUBTRACT, DIVIDE, CONVERT, COMPARE
+    @Column(name = "this_measurement_type")
+    private String thisMeasurementType;
 
-    // Result
+    @Column(name = "that_value")
+    private double thatValue;
+
+    @Column(name = "that_unit")
+    private String thatUnit;
+
+    @Column(name = "that_measurement_type")
+    private String thatMeasurementType;
+
+    @Column(name = "operation_type", nullable = false)
+    private String operationType;
+
+    @Column(name = "result_string")
+    private String resultString;
+
+    @Column(name = "result_value")
     private double resultValue;
-    private String resultUnit;
-    private boolean booleanResult; // for COMPARE
 
-    // Error
-    private boolean error;
+    @Column(name = "result_unit")
+    private String resultUnit;
+
+    @Column(name = "result_measurement_type")
+    private String resultMeasurementType;
+
+    @Column(name = "error_message")
     private String errorMessage;
 
-    // Timestamp
+    @Column(name = "is_error")
+    private boolean isError;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    /** Default constructor for JDBC result set mapping */
-    public QuantityMeasurementEntity() {
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    /**
+     * Lifecycle callback to set timestamps on persist.
+     */
+    @PrePersist
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    /** Constructor for binary arithmetic operations (ADD, SUBTRACT) */
-    public QuantityMeasurementEntity(
-            double op1Val, String op1Unit,
-            double op2Val, String op2Unit,
-            String opType,
-            double resVal, String resUnit) {
-        this.operand1Value = op1Val;
-        this.operand1Unit = op1Unit;
-        this.operand2Value = op2Val;
-        this.operand2Unit = op2Unit;
-        this.operationType = opType;
-        this.resultValue = resVal;
-        this.resultUnit = resUnit;
-        this.error = false;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    /** Constructor for COMPARE operation */
-    public QuantityMeasurementEntity(
-            double op1Val, String op1Unit,
-            double op2Val, String op2Unit,
-            boolean compareResult) {
-        this.operand1Value = op1Val;
-        this.operand1Unit = op1Unit;
-        this.operand2Value = op2Val;
-        this.operand2Unit = op2Unit;
-        this.operationType = "COMPARE";
-        this.booleanResult = compareResult;
-        this.error = false;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    /** Constructor for CONVERT / DIVIDE (single primary operand) */
-    public QuantityMeasurementEntity(
-            double op1Val, String op1Unit,
-            String opType,
-            double resVal, String resUnit) {
-        this.operand1Value = op1Val;
-        this.operand1Unit = op1Unit;
-        this.operationType = opType;
-        this.resultValue = resVal;
-        this.resultUnit = resUnit;
-        this.error = false;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    /** Error constructor */
-    public QuantityMeasurementEntity(String errorMessage) {
-        this.error = true;
-        this.errorMessage = errorMessage;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    // -- Getters -------------------------------------------
-    public long getId() {
-        return id;
-    }
-
-    public double getOperand1Value() {
-        return operand1Value;
-    }
-
-    public String getOperand1Unit() {
-        return operand1Unit;
-    }
-
-    public double getOperand2Value() {
-        return operand2Value;
-    }
-
-    public String getOperand2Unit() {
-        return operand2Unit;
-    }
-
-    public String getOperationType() {
-        return operationType;
-    }
-
-    public double getResultValue() {
-        return resultValue;
-    }
-
-    public String getResultUnit() {
-        return resultUnit;
-    }
-
-    public boolean getBooleanResult() {
-        return booleanResult;
-    }
-
-    public boolean isError() {
-        return error;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    // -- Setters -------------------------------------------
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setOperand1Value(double v) {
-        this.operand1Value = v;
-    }
-
-    public void setOperand1Unit(String u) {
-        this.operand1Unit = u;
-    }
-
-    public void setOperand2Value(double v) {
-        this.operand2Value = v;
-    }
-
-    public void setOperand2Unit(String u) {
-        this.operand2Unit = u;
-    }
-
-    public void setOperationType(String t) {
-        this.operationType = t;
-    }
-
-    public void setResultValue(double v) {
-        this.resultValue = v;
-    }
-
-    public void setResultUnit(String u) {
-        this.resultUnit = u;
-    }
-
-    public void setBooleanResult(boolean b) {
-        this.booleanResult = b;
-    }
-
-    public void setError(boolean e) {
-        this.error = e;
-    }
-
-    public void setErrorMessage(String m) {
-        this.errorMessage = m;
-    }
-
-    public void setCreatedAt(LocalDateTime t) {
-        this.createdAt = t;
-    }
-
-    @Override
-    public String toString() {
-        if (error)
-            return "Entity[ERROR: " + errorMessage + "]";
-        if ("COMPARE".equals(operationType))
-            return "Entity[" + operand1Value + " " + operand1Unit +
-                    " " + operationType + " " + operand2Value + " " + operand2Unit +
-                    " = " + booleanResult + "]";
-        return "Entity[" + operand1Value + " " + operand1Unit +
-                " " + operationType + " " + operand2Value + " " + operand2Unit +
-                " = " + resultValue + " " + resultUnit + "]";
+    /**
+     * Lifecycle callback to update timestamp on update.
+     */
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

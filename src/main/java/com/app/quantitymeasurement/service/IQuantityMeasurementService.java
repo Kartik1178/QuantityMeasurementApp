@@ -1,25 +1,49 @@
 package com.app.quantitymeasurement.service;
 
-import com.app.quantitymeasurement.dto.QuantityDTO;
+import com.app.quantitymeasurement.dto.QuantityInputDTO;
+import com.app.quantitymeasurement.dto.QuantityMeasurementDTO;
+
+import java.util.List;
 
 /**
- * UC15 Service interface.
- * All operations accept and return QuantityDTO objects.
+ * UC17 Service interface for quantity measurement operations.
+ * All operations accept QuantityInputDTO and return QuantityMeasurementDTO.
  */
 public interface IQuantityMeasurementService {
 
     /** Compare two quantities for equality (cross-unit same category). */
-    boolean compare(QuantityDTO a, QuantityDTO b);
+    QuantityMeasurementDTO compareQuantities(QuantityInputDTO input);
 
-    /** Convert a quantity to the specified target unit. */
-    QuantityDTO convert(QuantityDTO input, String targetUnit);
+    /** Convert a quantity to the target unit specified in thatQuantityDTO. */
+    QuantityMeasurementDTO convertQuantity(QuantityInputDTO input);
 
     /** Add two quantities; result expressed in first operand's unit. */
-    QuantityDTO add(QuantityDTO a, QuantityDTO b);
+    QuantityMeasurementDTO addQuantities(QuantityInputDTO input);
 
-    /** Subtract b from a; result expressed in first operand's unit. */
-    QuantityDTO subtract(QuantityDTO a, QuantityDTO b);
+    /** Subtract second from first; result expressed in first operand's unit. */
+    QuantityMeasurementDTO subtractQuantities(QuantityInputDTO input);
 
-    /** Divide a by b; returns dimensionless scalar. */
-    double divide(QuantityDTO a, QuantityDTO b);
+    /** Divide first by second; returns dimensionless scalar result. */
+    QuantityMeasurementDTO divideQuantities(QuantityInputDTO input);
+
+    /** Get all measurement history. */
+    List<QuantityMeasurementDTO> getAllMeasurements();
+
+    /** Get history by operation type (e.g., COMPARE, ADD). */
+    List<QuantityMeasurementDTO> getHistoryByOperation(String operationType);
+
+    /** Get history by measurement type (e.g., LengthUnit, WeightUnit). */
+    List<QuantityMeasurementDTO> getHistoryByMeasurementType(String measurementType);
+
+    /** Get error history. */
+    List<QuantityMeasurementDTO> getErrorHistory();
+
+    /** Get count of successful operations by operation type. */
+    long getCountByOperationSuccess(String operationType);
+
+    /** Get total measurement count. */
+    long getTotalCount();
+
+    /** Clear all measurement history. */
+    void clearHistory();
 }

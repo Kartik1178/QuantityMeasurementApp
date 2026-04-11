@@ -1,51 +1,36 @@
 package com.app.quantitymeasurement.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
- * UC15 Data Transfer Object.
+ * UC17 Data Transfer Object for quantity input.
  * Carries value + unit name + measurement type between layers.
- * Example: new QuantityDTO(1.0, "FEET", "LENGTH")
+ * Includes validation annotations for REST API input validation.
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuantityDTO {
 
-    private double value;
-    private String unit; // e.g. "FEET", "KILOGRAM"
-    private String type; // e.g. "LENGTH", "WEIGHT", "VOLUME", "TEMPERATURE"
+    @NotNull(message = "Value must not be null")
+    private Double value;
 
-    public QuantityDTO() {
-    }
+    @NotEmpty(message = "Unit must not be empty")
+    private String unit;
 
-    public QuantityDTO(double value, String unit, String type) {
+    @NotEmpty(message = "Measurement type must not be empty")
+    private String measurementType;
+
+    /**
+     * Convenience constructor using primitive double for backward compatibility.
+     */
+    public QuantityDTO(double value, String unit, String measurementType) {
         this.value = value;
         this.unit = unit;
-        this.type = type;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setValue(double v) {
-        this.value = v;
-    }
-
-    public void setUnit(String u) {
-        this.unit = u;
-    }
-
-    public void setType(String t) {
-        this.type = t;
-    }
-
-    @Override
-    public String toString() {
-        return "QuantityDTO{value=" + value + ", unit='" + unit + "', type='" + type + "'}";
+        this.measurementType = measurementType;
     }
 }

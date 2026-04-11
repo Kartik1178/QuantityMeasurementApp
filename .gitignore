@@ -41,3 +41,6 @@ target/
 logs/
 *.dat
 *.log
+
+### UC17 - Old UC16 files ###
+dump/
